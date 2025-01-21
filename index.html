@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cruzadinha Felina - Complete a Cruzadinha e ganhe um prêmio surpresa</title>
+    <style>
+        /* Aplicando a imagem de fundo com 65% de transparência */
+        body {
+            position: relative;
+            color: black; /* Garantir que o texto tenha boa visibilidade */
+        }
+
+        /* Camada com a imagem de fundo e transparência */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.imgur.com/0d2QEp9.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: 0.35; /* Define a transparência da imagem */
+            z-index: -1; /* Coloca a camada atrás do conteúdo */
+        }
+
+        #cross {
+            text-align: center;
+            width: 30px;
+            height: 30px;
+            margin: 0;
+            padding: 0;
+            border-collapse: collapse;
+            border: 1px solid white;
+        }
+        tr {
+            margin: 0;
+            padding: 0;
+            border-collapse: collapse;
+        }
+        td {
+            height: 30px;
+            width: 30px;
+        }
+        #puzzel {
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            border-collapse: collapse;
+            border: 1px solid black;
+        }
+        .inputBox {
+            width: 40px;
+            height: 40px;
+            border: 1px solid black;
+            text-align: center;
+        }
+        #hintsTable {
+            margin-top: 20px;
+            width: 100%;
+            text-align: left;
+        }
+        .butt {
+            height: 40px;
+            width: 100px;
+        }
+        #prizeBox {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 120%; /* 20% maior */
+            width: 400px;
+            height: 150px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f0f0f0;
+            border: 2px solid #000;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        #finalPrize {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        #prizeConfirmation {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 120%; /* 20% maior */
+            width: 400px;
+            height: 150px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f0f0f0;
+            border: 2px solid #000;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        #afterYes {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 120%; /* 20% maior */
+            width: 400px;
+            height: 150px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f0f0f0;
+            border: 2px solid #000;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        /* Additional styles for the title and instructions */
+        #title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 30px;
+        }
+        #instructions {
+            text-align: center;
+            font-size: 16px;
+            margin-top: 20px;
+            padding: 0 20px;
+        }
+    </style>
+    <script>
+        //Globals
+        var puzzelArrayData;
+        var currentTextInput;
+        var allCorrect = false; // Variable to track if all answers are correct
+
+        //Loads the Crossword
+        function initializeScreen(){
+            var puzzelTable = document.getElementById("puzzel");
+            puzzelArrayData = preparePuzzelArray();
+            for (var i = 0; i < puzzelArrayData.length; i++) {
+                var row = puzzelTable.insertRow(-1);
+                var rowData = puzzelArrayData[i];
+                for (var j = 0; j < rowData.length; j++) {
+                    var cell = row.insertCell(-1);
+                    if (rowData[j] != 0) {
+                        var txtID = 'txt_' + i + '_' + j;
+                        cell.innerHTML = '<input type="text" class="inputBox" maxlength="1" id="' + txtID + '" onfocus="textInputFocus(' + "'" + txtID + "'" + ')" oninput="moveToNextInput(this)">';
+                    } else {
+                        cell.style.backgroundColor = "black";
+                    }
+                }
+            }
+        }
+
+        //Stores ID of the selected cell into currentTextInput
+        function textInputFocus(txtID123){
+            currentTextInput = txtID123;
+        }
+
+        //Function to move to the next input field when a letter is entered
+        function moveToNextInput(currentInput) {
+            // Get the current input field's ID
+            var currentId = currentInput.id;
+            var token = currentId.split('_');
+            var row = parseInt(token[1]);
+            var col = parseInt(token[2]);
+
+            // Try to move to the next input field in the same row
+            if (col < puzzelArrayData[row].length - 1 && puzzelArrayData[row][col + 1] != 0) {
+                document.getElementById('txt_' + row + '_' + (col + 1)).focus();
+            } 
+            // If there's no next in the same row, try the next row
+            else if (row < puzzelArrayData.length - 1 && puzzelArrayData[row + 1][0] != 0) {
+                document.getElementById('txt_' + (row + 1) + '_0').focus();
+            }
+        }
+
+        //Returns Array
+        function preparePuzzelArray(){
+            var items = [
+                ['m', 'i', 'a'],
+                ['g', 'o', 'l', 'l', 'u', 'm'],
+                ['s', 'm', 'e', 'a', 'g', 'o', 'l']
+            ];
+            return items;
+        }
+
+        //Clear All Button
+        function clearAllClicked(){
+            currentTextInput = '';
+            var puzzelTable = document.getElementById("puzzel");
+            puzzelTable.innerHTML = '';
+            initializeScreen();
+            allCorrect = false;
+            document.getElementById("prizeBox").style.display = 'none'; // Hide the prize box on reset
+            document.getElementById("finalPrize").style.display = 'none'; // Hide final prize box
+            document.getElementById("prizeConfirmation").style.display = 'none'; // Hide prize confirmation box
+            document.getElementById("afterYes").style.display = 'none'; // Hide the "parabéns" message on reset
+        }
+
+        //Check button - modified to accept both upper and lowercase, and color correct answers green
+        function checkClicked(){
+            allCorrect = true; // Reset variable
+            for (var i = 0; i < puzzelArrayData.length; i++) {
+                var rowData = puzzelArrayData[i];
+                for (var j = 0; j < rowData.length; j++) {
+                    if (rowData[j] != 0) {
+                        var selectedInputTextElement = document.getElementById('txt_' + i + '_' + j);
+                        var userInput = selectedInputTextElement.value.toLowerCase(); // Convert input to lowercase
+                        var correctAnswer = rowData[j].toLowerCase(); // Convert correct answer to lowercase
+
+                        // Compare user input and correct answer
+                        if (userInput !== correctAnswer) {
+                            selectedInputTextElement.style.backgroundColor = 'red';
+                            allCorrect = false;
+                        } else {
+                            selectedInputTextElement.style.backgroundColor = 'green';
+                        }
+                    }
+                }
+            }
+            if (allCorrect) {
+                document.getElementById("prizeBox").style.display = 'block'; // Show the prize box if all answers are correct
+            }
+        }
+
+        //Clue Button
+        function clueClicked(){
+            if (currentTextInput != null) {
+                var temp1 = currentTextInput;
+                var token = temp1.split("_");
+                var row = token[1];
+                var column = token[2];
+                document.getElementById(temp1).value = puzzelArrayData[row][column];
+            }
+        }
+
+        //Solve Button - Now only fills the selected word's line
+        function solveClicked(){
+            if (currentTextInput != null) {
+                var temp1 = currentTextInput;
+                var token = temp1.split("_");
+                var row = token[1];
+
+                // Preenche a linha inteira da palavra selecionada
+                for (var j = 0; j < puzzelArrayData[row].length; j++) {
+                    if (puzzelArrayData[row][j] != 0) {
+                        var selectedInputTextElement = document.getElementById('txt_' + row + '_' + j);
+                        selectedInputTextElement.value = puzzelArrayData[row][j];
+                    }
+                }
+            }
+        }
+
+        //Resgatar prêmio button
+        function claimPrize() {
+            document.getElementById("prizeBox").style.display = 'none'; // Hide the "Resgatar prêmio" box
+            document.getElementById("prizeConfirmation").style.display = 'block'; // Show the "Sim/Não" confirmation box
+        }
+
+        //User response "Sim" for the prize
+        function claimYes() {
+            document.getElementById("prizeConfirmation").style.display = 'none'; // Hide confirmation box
+            document.getElementById("afterYes").style.display = 'block'; // Show "parabéns" message with the music
+        }
+
+        //User response "Não" for the prize
+        function claimNo() {
+            window.location.href = "https://youtu.be/3-y0p0GL4TI?si=4vgI1RiKccq9EEpy"; // Redirect to YouTube video if user selects no
+        }
+
+        //Open the video when clicking "Confira"
+        function openVideo() {
+            window.location.href = "https://youtu.be/0CdMqJ9Lidg?si=mI27t6HgXx5xlMgQ"; // Open the YouTube video after confirming the date
+        }
+    </script>
+</head>
+<body onload="initializeScreen()">
+    <!-- Title Section -->
+    <div id="title">
+        Cruzadinha Felina - Complete a Cruzadinha e ganhe um prêmio surpresa
+    </div>
+
+    <!-- Instructions Section -->
+    <div id="instructions">
+        <p>Bem-vindo à Cruzadinha Felina! Complete as palavras da cruzadinha preenchendo as caixas com as letras corretas (Dicas abaixo da cruzadinha). Ao completar todas as palavras corretamente, você terá a chance de resgatar um prêmio surpresa! Siga os passos abaixo:</p>
+        <ol>
+            <li>Comece preenchendo as letras nas caixas de texto.</li>
+            <li>Quando terminar de colocar todas as letras, clique em VERIFICAR, se estiver tudo correto um botão aparecerá para você resgatar o prêmio.</li>
+            <li>Cada letra correta será destacada em verde, e cada letra errada será destacada em vermelho.</li>
+
+            <li>Clique no botão "Resgatar Prêmio" para ver sua recompensa!</li>
+        </ol>
+    </div>
+
+    <!-- Puzzle Section -->
+    <div>
+        <table id="puzzel"></table>
+    </div>
+
+    <div>
+        <input class="butt" type="button" value="Recomeçar" onclick="clearAllClicked()">
+        <input class="butt" type="button" value="Verificar" onclick="checkClicked()">
+        <input class="butt" type="button" value="Dica" onclick="clueClicked()">
+        <input class="butt" type="button" value="Resposta" onclick="solveClicked()">
+    </div>
+
+    <table id="hintsTable">
+        <tr>
+            <td><strong>Dicas:</strong></td>
+        </tr>
+        <tr>
+            <td>Linha 1. Nome de uma gatinha que quando está sendo escovada fica lambendo a escova</td>
+        </tr>
+        <tr>
+            <td>Linha 2. Nome de um gatinho preto que gosta de brincar mas sem ser tocado</td>
+        </tr>
+        <tr>
+            <td>Linha 3. Nome de um gatão pançudinho</td>
+        </tr>
+    </table>
+
+    <!-- Prize Box -->
+    <div id="prizeBox">
+        <input class="butt" type="button" value="Resgatar Prêmio" onclick="claimPrize()">
+    </div>
+
+    <!-- Prize Confirmation (Sim/Não) -->
+    <div id="prizeConfirmation">
+        <p>Gostaria de ter um date com o Allan?</p>
+        <input class="butt" type="button" value="Sim" onclick="claimYes()">
+        <input class="butt" type="button" value="Não" onclick="claimNo()">
+    </div>
+
+    <!-- "Parabéns" and Music Message -->
+    <div id="afterYes">
+        <p>Parabéns, você ganhou um date com o Allan ao som dessa trilha sonora!</p>
+        <input class="butt" type="button" value="Confira" onclick="openVideo()">
+    </div>
+</body>
+</html>
